@@ -1,14 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
 using System.IO.Compression;
+using System.Text.Json;
 using Common.BasicHelper.Utils.Extensions;
 using Spectre.Console;
 
-AnsiConsole.Write(
-    new FigletText("KitX Publisher")
-        .Centered()
-        .Color(Color.Blue)
-);
+AnsiConsole.Write(new FigletText("KitX Publisher").Centered().Color(Color.Blue));
 
 PathHelper.Instance.AssertInSlnDirectory(out _);
 
@@ -16,7 +12,7 @@ var baseDir = PathHelper.Instance.BaseSlnDir;
 
 var publishDir = $"{baseDir}/KitX Publish".GetFullPath();
 
-if (Directory.Exists(publishDir) /* && !options.SkipGenerating */)
+if (Directory.Exists(publishDir))
     foreach (var dir in new DirectoryInfo(publishDir).GetDirectories())
         Directory.Delete(dir.FullName, true);
 
@@ -25,11 +21,7 @@ const string pub = "PublishProfiles/";
 
 var path = $"{baseDir}/KitX Clients/KitX Dashboard/KitX Dashboard/".GetFullPath();
 var abPubPath = $"{path}{pro}{pub}".GetFullPath();
-var files = Directory.GetFiles(
-    abPubPath,
-    "*.pubxml",
-    SearchOption.AllDirectories
-);
+var files = Directory.GetFiles(abPubPath, "*.pubxml", SearchOption.AllDirectories);
 
 var logsDir = $"{publishDir}/logs".GetFullPath();
 var log = $"{logsDir}/log-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.log".GetFullPath();
@@ -64,7 +56,9 @@ AnsiConsole
             AnsiConsole.Write(new Rule($"[blue]Begin Generating[/]"));
 
             AnsiConsole.MarkupLine($"{prompt} Found {files.Length} profiles");
-            AnsiConsole.Markup($"{prompt} Generating logs at: \"{Path.GetRelativePath(baseDir, log)}\"");
+            AnsiConsole.Markup(
+                $"{prompt} Generating logs at: \"{Path.GetRelativePath(baseDir, log)}\""
+            );
             AnsiConsole.WriteLine();
 
             packTask.IsIndeterminate = true;
@@ -74,7 +68,11 @@ AnsiConsole
                 var index = executingThreadIndex++;
                 var filename = Path.GetFileName(item);
                 const string cmd = "dotnet";
-                var arg = $"publish \"{(path + "/KitX.Dashboard.csproj").GetFullPath()}\" \"/p:PublishProfile={item}\"";
+                var arg = new StringBuilder()
+                    .Append("publish ")
+                    .Append($"\"{(path + "/KitX.Dashboard.csproj").GetFullPath()}\" ")
+                    .Append($"\"/p:PublishProfile={item}\"")
+                    .ToString();
 
                 AnsiConsole.MarkupLine($"{prompt} 📄 [white]{filename}[/]: [gray]{cmd} {arg}[/]");
 
@@ -86,7 +84,7 @@ AnsiConsole
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
                 };
                 process.StartInfo = psi;
                 process.Start();
@@ -104,7 +102,9 @@ AnsiConsole
 
                 genTask.Increment((1.0 / files.Length) * 100);
 
-                AnsiConsole.MarkupLine($"{prompt} Finished task_{index}, still {files.Length - finishedThreads} tasks waiting");
+                AnsiConsole.MarkupLine(
+                    $"{prompt} Finished task_{index}, still {files.Length - finishedThreads} tasks waiting"
+                );
 
                 AnsiConsole.Write(new Rule($"[red]Finished task-{index}[/]"));
             }
@@ -118,7 +118,9 @@ AnsiConsole
             AnsiConsole.MarkupLine($"{prompt} Begin packing.");
 
             if (packIgnoreExists)
-                AnsiConsole.MarkupLine($"{prompt} `.packignore` not exists, all folder will be packed.");
+                AnsiConsole.MarkupLine(
+                    $"{prompt} `.packignore` not exists, all folder will be packed."
+                );
 
             packTask.IsIndeterminate = false;
 
@@ -147,7 +149,9 @@ AnsiConsole
                     true
                 );
 
-                AnsiConsole.MarkupLine($"    Packed to {Path.GetRelativePath(baseDir, zipFileName)}");
+                AnsiConsole.MarkupLine(
+                    $"    Packed to {Path.GetRelativePath(baseDir, zipFileName)}"
+                );
 
                 packTask.Increment((1.0 / folders.Count) * 100);
             }
