@@ -37,6 +37,7 @@ if (!Directory.Exists(logsDir))
     Directory.CreateDirectory(logsDir);
 
 var packIgnore = $"{publishDir}/.packignore".GetFullPath();
+var packIgnoreExists = File.Exists(packIgnore);
 
 var finishedThreads = 0;
 var executingThreadIndex = 0;
@@ -116,9 +117,14 @@ AnsiConsole
         {
             AnsiConsole.MarkupLine($"{prompt} Begin packing.");
 
+            if (packIgnoreExists)
+                AnsiConsole.MarkupLine($"{prompt} `.packignore` not exists, all folder will be packed.");
+
             packTask.IsIndeterminate = false;
 
-            var ignoredDirectories = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(packIgnore));
+            var ignoredDirectories = packIgnoreExists
+                ? JsonSerializer.Deserialize<List<string>>(File.ReadAllText(packIgnore))
+                : new List<string>();
 
             var folders = new DirectoryInfo(publishDir).GetDirectories().ToList();
 
