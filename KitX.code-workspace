@@ -6,7 +6,7 @@
   ],
   "settings": {
     "git.autorefresh": true,
-    "dotnet.defaultSolution": "KitX.sln",
+    "dotnet.defaultSolution": "KitX.slnx",
     "[python]": {
       "editor.defaultFormatter": "ms-python.black-formatter"
     },
